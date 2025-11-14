@@ -1,4 +1,4 @@
-/* 01_basic.c
+/* 01_basics.c
 Este programa demonstra a criação de um processo por meio da função fork() em C
 */
 #include <stdio.h>
