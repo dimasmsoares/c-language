@@ -6,7 +6,7 @@
 #include <errno.h>
 
 int main(int argc, char *argv[]){
-    printf("### INICIO COMUNICACAO BIDIRECIONAL\n");
+    printf("### INICIO COMUNICACAO BIDIRECIONAL (%s)\n", argv[0]);
 
     // pipe_p2c_fd[2]: Canal Pai (Escrita) -> Filho (Leitura)
     int pipe_p2c_fd[2]; 

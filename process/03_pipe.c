@@ -6,13 +6,16 @@ operando em um modelo simples de produtor-consumidor.
 
 int pipe(int pipefd[2]);
 
-Quando chamada, ela preenche o array pipefd com dois novos descritores de arquivo (file descriptors):
+Quando chamada, a função pipe cria um buffer temporário na memória RAM, que é gerenciado diretamente pelo kernel do SO.
+O pipe recebe como argumento uma array de inteiros de tamanho dois e registra nessa array os descritores de arquivos (file descriptors) usados pelo SO para apontar para 
+a região da memória onde estar esse buffer:
 -> pipefd[0]: O final do pipe de onde os dados podem ser lidos.
 -> pipefd[1]: O final do pipe para onde os dados podem ser escritos.
 
 Para que a comunicação entre dois processos funcione, você geralmente chama pipe() no processo pai e, em seguida, chama fork().
-O processo filho herda cópias dos mesmos descritores de arquivo. 
+O SO duplica a tabela de descritores de arquivo e processo filho herda cópias dos mesmos descritores de arquivo que aponta para o buffer na RAM. 
 É crucial fechar a extremidade não utilizada em cada processo para garantir o comportamento correto do sistema.
+O fechamento (close()) é importante, pois garante que o kernel saiba que não há mais processos ativos interessados naquela extremidade do pipe.
 
 */
 #include <stdio.h>
