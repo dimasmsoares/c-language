@@ -37,7 +37,6 @@ int main(int argc, char *argv[]){
         xs.items[xs.count++] = x;
     }
 
-
     // PASSO 3: Uso dos Dados
     for (size_t i = 0; i < xs.count; i++) {
         printf("%d\n", xs.items[i]);
