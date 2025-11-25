@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 typedef struct Node
 {
@@ -16,6 +18,8 @@ typedef struct
 
 void printList(List list);
 int listAppend(List *pList, int v);
+void freeList(List list);
+void bubbleSort(List *pList);
 
 int main(int argc, char *argv[])
 {
@@ -25,8 +29,7 @@ int main(int argc, char *argv[])
     int valores_inciais[10] = {75, 65, 80, 99, 15, 16, 17, 47, 6, 13};
 
     // Cria a lista inicialmente vazia
-    List myList = {0};
-    printList(myList);  
+    List myList = {0};  
     
     // Inserindo os valores iniciais
     for(int i = 0; i < 10; i++){
@@ -34,6 +37,36 @@ int main(int argc, char *argv[])
     }
 
     printList(myList);
+
+    /*
+    pid_t id = fork();
+    if(id < 1)
+    {
+        fprintf(stderr, "Erro na criação do processo\n");
+        freeList(myList);
+        return 1;
+    }
+
+    if(id == 0)     // Processo filho
+    {
+        clock_t inicio = clock();
+        bubbleSort();
+        clock_t fim = clock();
+        double tempo_gasto = (double)(fim - inicio) / CLOCKS_PER_SEC;
+        printf("[BUBBLE SORT]Tempo de CPU: %f segundos\n", tempo_gasto);
+    }
+    else            // Processo pai
+    {
+        clock_t inicio = clock();
+        mergeSort();
+        clock_t fim = clock();
+        double tempo_gasto = (double)(fim - inicio) / CLOCKS_PER_SEC;
+        printf("[MERGE SORT]Tempo de CPU: %f segundos\n", tempo_gasto);
+    }
+    int resp_wait = wait(0);
+    */
+
+    freeList(myList);
     
     return 0;
 }
@@ -54,7 +87,8 @@ void printList(List list)
 
 }
 
-int listAppend(List *pList, int v){
+int listAppend(List *pList, int v)
+{
     // Alocando a um novo nó
     Node *newNode = (Node*)malloc(sizeof(Node));
     if(newNode == NULL){
@@ -81,10 +115,18 @@ int listAppend(List *pList, int v){
     return 1;
 }
 
-void freeList(List list){
-    Node *aux = list.pHead;
+void freeList(List list)
+{
+    Node *aux = NULL;
     while(list.pHead != NULL){
+        aux = list.pHead;
+        list.pHead = list.pHead->pNext; 
         free(aux);
-        aux = 
+        //printf("Liberado %p\n", aux);
     }
+}
+
+void bubbleSort(List *pList)
+{
+    
 }
