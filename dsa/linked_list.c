@@ -20,23 +20,36 @@ void printList(List list);
 int listAppend(List *pList, int v);
 void freeList(List list);
 void bubbleSort(List *pList);
+void mergeSort(List *pList);
 
 int main(int argc, char *argv[])
 {
+    int tam = 100;
     printf("# LINKED LIST\n");
-
-    // Valores para compor a lista inicial
-    int valores_inciais[10] = {75, 65, 80, 99, 15, 16, 17, 47, 6, 13};
+    if(argc == 2){
+        tam = atoi(argv[1]);
+    }
 
     // Cria a lista inicialmente vazia
     List myList = {0};  
     
     // Inserindo os valores iniciais
-    for(int i = 0; i < 10; i++){
-        if(listAppend(&myList, valores_inciais[i]) == 0) return 1;
+    for(int i = 0; i < tam; i++){
+        if(listAppend(&myList, tam - i) == 0) return 1;
     }
+    //printf("ESTADO INICIAL\n");
+    //printList(myList);
 
-    printList(myList);
+    clock_t inicio = clock();
+    //bubbleSort(&myList);
+    mergeSort(&myList);
+    clock_t fim = clock();
+
+    //printf("ESTADO FINAL\n");
+    //printList(myList);
+
+    double tempo_gasto = (double)(fim - inicio) / CLOCKS_PER_SEC;
+    printf("[BUBBLE SORT] Tempo de CPU: %f segundos\n", tempo_gasto);
 
     /*
     pid_t id = fork();
@@ -73,15 +86,17 @@ int main(int argc, char *argv[])
 
 void printList(List list)
 {
+    int count = 0;
     // Se a lista está vazia
     if(list.lenght == 0){
         printf("Lista Vazia\n");
     }
     else{
         Node *aux = list.pHead;
-        while(aux != NULL){
+        while(aux != NULL && count < list.lenght){
             printf("[%02d|%p] \n", aux->value, aux->pNext);
             aux = aux->pNext;
+            count ++;
         }
     }
 
@@ -121,6 +136,7 @@ void freeList(List list)
     while(list.pHead != NULL){
         aux = list.pHead;
         list.pHead = list.pHead->pNext; 
+        aux->value = 0;
         free(aux);
         //printf("Liberado %p\n", aux);
     }
@@ -128,5 +144,51 @@ void freeList(List list)
 
 void bubbleSort(List *pList)
 {
-    
+    for(int p = 0; p < (pList->lenght - 1); p++)
+    {
+        Node *aux1 = pList->pHead;
+        Node *aux2 = aux1->pNext;
+        for(int c = 0; c < (pList->lenght - 1 - p); c++)
+        {
+            if(aux1->value > aux2->value)
+            {
+                int temp = aux1->value;
+                aux1->value = aux2->value;
+                aux2->value = temp;
+            }
+            aux1 = aux1->pNext;
+            aux2 = aux2->pNext;
+        }
+        //printf("PASSADA %d\n", p);
+        //printList(*pList);
+    }   
 }
+
+void mergeSort(List *pList)
+{
+    if(pList->lenght > 1)
+    {
+        List listInf = {0};
+        List listSup = {0};
+        int i_inicio = 0;
+        int i_fim = pList->lenght - 1;
+        int i_metade = i_fim / 2;
+        listInf.pHead = pList->pHead;
+        listInf.lenght = i_metade + 1;
+        
+        Node *aux = pList->pHead;
+        for(int i = 0; i < i_metade; i++) aux = aux->pNext;
+        
+        listSup.pHead = aux->pNext;
+        listSup.lenght = i_fim - i_metade;
+        
+        printf("LISTA INFERIOR\n");
+        printList(listInf);
+        printf("LISTA SUPERIOR\n");
+        printList(listSup);
+        mergeSort(&listInf);
+        mergeSort(&listSup);  
+    }  
+}
+
+
