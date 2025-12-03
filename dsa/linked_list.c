@@ -20,7 +20,10 @@ void printList(List list);
 int listAppend(List *pList, int v);
 void freeList(List list);
 void bubbleSort(List *pList);
+Node* mergeLists(Node *a, Node *b);
+Node* mergeSortRec(Node *head);
 void mergeSort(List *pList);
+Node* mergeSortRec(Node *head);
 
 int main(int argc, char *argv[])
 {
@@ -164,31 +167,96 @@ void bubbleSort(List *pList)
     }   
 }
 
+/* Merge duas listas ordenadas (a e b) e retorna a cabeça da lista resultante */
+Node* mergeLists(Node *a, Node *b)
+{
+    if (a == NULL) return b;
+    if (b == NULL) return a;
+
+    Node *head = NULL;   // cabeça da lista mesclada
+    Node *tail = NULL;   // último nó atual
+
+    // inicializa head
+    if (a->value <= b->value) {
+        head = tail = a;
+        a = a->pNext;
+    } else {
+        head = tail = b;
+        b = b->pNext;
+    }
+
+    // enquanto existirem nós em ambas as listas
+    while (a != NULL && b != NULL) {
+        if (a->value <= b->value) {
+            tail->pNext = a;
+            tail = a;
+            a = a->pNext;
+        } else {
+            tail->pNext = b;
+            tail = b;
+            b = b->pNext;
+        }
+    }
+
+    // anexa o restante
+    if (a != NULL) tail->pNext = a;
+    else tail->pNext = b;
+
+    return head;
+}
+
+/* Encontra o meio da lista e o separa.
+   Retorna o ponteiro para a segunda metade (head da metade superior).
+   Ex.: lista: head -> ... -> mid -> midNext -> ... -> NULL
+   Depois a lista é quebrada em: head...mid -> NULL  e midNext... -> NULL
+*/
+Node* splitMiddle(Node *head)
+{
+    if (head == NULL || head->pNext == NULL) return NULL;
+
+    Node *slow = head;
+    Node *fast = head;
+    Node *prev = NULL;
+
+    while (fast != NULL && fast->pNext != NULL) {
+        prev = slow;
+        slow = slow->pNext;
+        fast = fast->pNext->pNext;
+    }
+
+    // agora slow aponta para o início da metade superior (ou para o meio+1)
+    // prev é o último nó da primeira metade
+    Node *second = slow;
+    if (prev) prev->pNext = NULL; // corta a lista
+    return second;
+}
+
+/* mergeSort recursivo que recebe head e retorna head ordenado */
+Node* mergeSortRec(Node *head)
+{
+    // base: 0 ou 1 elemento
+    if (head == NULL || head->pNext == NULL) return head;
+
+    // divide
+    Node *second = splitMiddle(head);
+
+    // ordena recursivamente cada metade
+    Node *left = mergeSortRec(head);
+    Node *right = mergeSortRec(second);
+
+    // merge e retorna head ordenado
+    return mergeLists(left, right);
+}
+
+/* Função pública que você chama com a List inteira */
 void mergeSort(List *pList)
 {
-    if(pList->lenght > 1)
-    {
-        List listInf = {0};
-        List listSup = {0};
-        int i_inicio = 0;
-        int i_fim = pList->lenght - 1;
-        int i_metade = i_fim / 2;
-        listInf.pHead = pList->pHead;
-        listInf.lenght = i_metade + 1;
-        
-        Node *aux = pList->pHead;
-        for(int i = 0; i < i_metade; i++) aux = aux->pNext;
-        
-        listSup.pHead = aux->pNext;
-        listSup.lenght = i_fim - i_metade;
-        
-        printf("LISTA INFERIOR\n");
-        printList(listInf);
-        printf("LISTA SUPERIOR\n");
-        printList(listSup);
-        mergeSort(&listInf);
-        mergeSort(&listSup);  
-    }  
+    if (pList == NULL || pList->pHead == NULL || pList->lenght < 2) return;
+
+    pList->pHead = mergeSortRec(pList->pHead);
+
+    // lenght permanece igual; caso queira, você pode recomputar para segurança,
+    // mas não é necessário pois não criamos/removemos nós.
 }
 
 
