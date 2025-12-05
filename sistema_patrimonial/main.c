@@ -1,16 +1,18 @@
+/*BIBLIOTECAS*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // Para strcspn
 #include <sqlite3.h>
-
+/*******************************************************************************/
+/*ESTRUTURAS DE DADOS*/
 typedef struct MaterialPermanente{
     unsigned int nrp;
     char material[30];
     char marca[30];
     char modelo[30];
     char numeroSerie[30];
-}MaterialPermanente;
-
+} MaterialPermanente;
+/********************************************************************************/
 /*PROTÓTIPOS*/
 void limparBuffer();
 int telaInicial();
@@ -18,10 +20,8 @@ MaterialPermanente* cadastrarMaterialPermanente();
 void printMP(MaterialPermanente *mp);
 void salvarNoBD(MaterialPermanente *p_mp);
 int callback(void *data, int argc, char **argv, char **colName);
-void consultarTabela();
-
-
-
+void consultarNRP(int nrp);
+/*********************************************************************************/
 int main(int argc, char *argv[]) 
 {
     int escolha = telaInicial();
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         break;
     
     case 2: // Consultar material permanente
-        consultarTabela();
+        consultarNRP(415823);
         break;
 
     case 9: // Sair
@@ -45,7 +45,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// Função auxiliar para limpar o buffer de forma segura e portátil
+/*********************************************************************************/
+
+/*FUNÇÕES*/
 void limparBuffer() 
 {
     int c;
@@ -222,7 +224,7 @@ void salvarNoBD(MaterialPermanente *p_mp)
     if (sqlite3_step(stmt) != SQLITE_DONE) {
         printf("Erro ao inserir: %s\n", sqlite3_errmsg(db));
     } else {
-        printf("Registro inserido com sucesso!\n");
+        printf("Registro inserido com sucesso no banco de dados!\n");
     }
 
     sqlite3_finalize(stmt);
@@ -237,7 +239,7 @@ int callback(void *data, int argc, char **argv, char **colName) {
     return 0;
 }
 
-void consultarTabela(){
+void consultarNRP(int nrp){
     sqlite3 *db;
     char *errMsg = NULL;
 
@@ -249,14 +251,32 @@ void consultarTabela(){
     }
 
     // Consultar dados
-    const char *sql_select = "SELECT * FROM material_permanente;";
+    const char *sql = 
+        "SELECT nrp, material, marca, modelo, numero_serie "
+        "FROM material_permanente WHERE nrp = ?;";
 
-    printf("\nDados no banco:\n");
-    if (sqlite3_exec(db, sql_select, callback, NULL, &errMsg) != SQLITE_OK) {
-        printf("Erro ao fazer select: %s\n", errMsg);
-        sqlite3_free(errMsg);
+    sqlite3_stmt *stmt;
+
+    // Prepara comando SQL
+    if(sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK){
+        printf("Erro ao preparar SELECT: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
         return;
     }
+
+    // Faz o bind do parâmetro
+    sqlite3_bind_int(stmt, 1, nrp);
+
+    // Executa linha por linha
+    while(sqlite3_step(stmt) == SQLITE_ROW){
+        printf("NRP: %d\n", sqlite3_column_int(stmt, 0));
+        printf("Material: %s\n", sqlite3_column_text(stmt, 1));
+        printf("Marca: %s\n", sqlite3_column_text(stmt, 2));
+        printf("Modelo: %s\n", sqlite3_column_text(stmt, 3));
+        printf("NS: %s\n\n", sqlite3_column_text(stmt, 4));
+    }
+
+    sqlite3_finalize(stmt);
 
     // 5. Fechar
     sqlite3_close(db);
